@@ -1,7 +1,7 @@
-# master status on 2022-03-08
-SRCREV ?= "9d4a44380d273de22d5753883cbf5581795ff24d"
+# master status on 2022-04-05
+SRCREV ?= "14dd241aad8af447680ac73e8579990e2c09c1e7"
 
-XEN_REL ?= "4.16"
+XEN_REL ?= "4.17"
 XEN_BRANCH ?= "master"
 
 SRC_URI = " \

@@ -19,6 +19,11 @@ DISTUTILS_INSTALL_ARGS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'syste
 do_install:append() {
     ln -s ${libdir}/${BPN}/uncloud-init ${D}${sysconfdir}/cloud/uncloud-init
     ln -s ${libdir}/${BPN}/write-ssh-key-fingerprints ${D}${sysconfdir}/cloud/write-ssh-key-fingerprints
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'true', 'false', d)}; then
+       install -m 755 -d ${D}${sysconfdir}/init.d/
+       install -m 755 ${S}/sysvinit/redhat/* ${D}${sysconfdir}/init.d/
+    fi
+
 }
 
 inherit pkgconfig
@@ -26,8 +31,9 @@ inherit setuptools3_legacy
 inherit update-rc.d
 inherit systemd
 
-# setup.py calls "pkg-config systemd --variable=systemdsystemunitdir" and needs to find our systemd
+# setup.py calls "pkg-config systemd --variable=systemdsystemunitdir" and needs to find our dev manager
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}"
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'udev', '', d)}"
 
 inherit python3native
 
@@ -55,6 +61,8 @@ RDEPENDS:${PN} = "python3 \
                   python3-jsonschema \
                   python3-pyyaml \
                   python3-oauthlib \
+                  python3-netifaces \
+                  python3-charset-normalizer \
                   bash \
                  "
 

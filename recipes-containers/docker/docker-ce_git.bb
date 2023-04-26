@@ -31,9 +31,9 @@ DESCRIPTION = "Linux container runtime \
 # so we get that tag, and make it our SRCREVS:
 #
 
-SRCREV_docker = "906f57ff5b7100013dfef066ea8fe367706468df"
-SRCREV_libnetwork = "64b7a4574d1426139437d20e81c0b6d391130ec8"
-SRCREV_cli = "62eae52c2a76f4c1dcf79dfc7b5ea3bf5eebab8b"
+SRCREV_docker = "3056208812eb5e792fa99736c9167d1e10f4ab49"
+SRCREV_libnetwork = "dcdf8f176d1e13ad719e913e796fb698d846de98"
+SRCREV_cli = "baeda1f82a10204ec5708d5fbba130ad76cfee49"
 SRCREV_FORMAT = "docker_libnetwork"
 SRC_URI = "\
 	git://github.com/docker/docker.git;branch=20.10;name=docker;protocol=https \
@@ -43,7 +43,10 @@ SRC_URI = "\
 	file://docker.init \
         file://0001-dynbinary-use-go-cross-compiler.patch \
         file://0001-cli-use-external-GO111MODULE-and-cross-compiler.patch \
+    file://0001-revert-go-1.8-update.patch;patchdir=src/import \
 	"
+
+DOCKER_COMMIT = "${SRCREV_docker}"
 
 require docker.inc
 
@@ -51,7 +54,7 @@ require docker.inc
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://src/import/LICENSE;md5=4859e97a9c7780e77972d989f0823f28"
 
-DOCKER_VERSION = "20.10.12-ce"
+DOCKER_VERSION = "20.10.21-ce"
 PV = "${DOCKER_VERSION}+git${SRCREV_docker}"
 
-CVE_PRODUCT = "docker"
+CVE_PRODUCT = "docker mobyproject:moby"
