@@ -5,8 +5,11 @@ LIC_FILES_CHKSUM = "file://src/github.com/kata-containers/proxy/LICENSE;md5=86d3
 
 GO_IMPORT = "github.com/kata-containers/proxy"
 SRCREV = "1148847739f9a9f47b92e34e4f309dc109d4dba9"
-SRC_URI = "git://${GO_IMPORT}.git;branch=master \
+SRC_URI = "git://${GO_IMPORT}.git;branch=master;protocol=https \
           "
+
+
+SKIP_RECIPE[kata-proxy] ?= "kata containers are currently broken, patches accepted"
 
 RDEPENDS:${PN}-dev:append = "bash"
 

@@ -9,7 +9,6 @@ DEPENDS = " \
     lvm2 \
     btrfs-tools \
     glib-2.0 \
-    ostree \
 "
 
 inherit go
@@ -36,6 +35,12 @@ S = "${WORKDIR}/git"
 inherit goarch
 inherit pkgconfig
 
+# This CVE was fixed in the container image go library skopeo is using.
+# See:
+# https://bugzilla.redhat.com/show_bug.cgi?id=CVE-2019-10214
+# https://github.com/containers/image/issues/654
+CVE_CHECK_IGNORE += "CVE-2019-10214"
+
 # This disables seccomp and apparmor, which are on by default in the
 # go package. 
 EXTRA_OEMAKE="BUILDTAGS=''"
@@ -61,8 +66,8 @@ do_compile() {
 	export CGO_ENABLED="1"
 	export CFLAGS=""
 	export LDFLAGS=""
-	export CGO_CFLAGS="${BUILDSDK_CFLAGS} --sysroot=${STAGING_DIR_TARGET}"
-	export CGO_LDFLAGS="${BUILDSDK_LDFLAGS} --sysroot=${STAGING_DIR_TARGET}"
+	export CGO_CFLAGS="${TARGET_CFLAGS}"
+	export CGO_LDFLAGS="${TARGET_LDFLAGS}"
 	cd ${S}/src/import
 
 	export GO111MODULE=off

@@ -30,14 +30,9 @@ RDEPENDS:${PN} = "\
 
 RDEPENDS:${PN}-dev = ""
 
-# Qemu is necessary on ARM platforms, and to support HVM guests on x86
-QEMU = "${@bb.utils.contains('PACKAGECONFIG', 'hvm', 'qemu', '', d)}"
-QEMU:arm = "qemu"
-QEMU:aarch64 = "qemu"
-
 RRECOMMENDS:${PN} = " \
-    ${QEMU} \
-    ${@bb.utils.contains('PACKAGECONFIG', 'hvm', 'seabios', '', d)} \
+    qemu \
+    ${@bb.utils.contains('XEN_TARGET_ARCH', 'x86_64', 'seabios ipxe vgabios', '', d)} \
     ${@bb.utils.contains('PACKAGECONFIG', 'externalblktap', '', '${BLKTAP_RRECOMMENDS}', d)} \
     ${PN}-flask \
     ${PN}-hvmloader \
@@ -716,7 +711,8 @@ ALLOW_EMPTY:${PN}-xen-vmtrace = "1"
 INSANE_SKIP:${PN} = "already-stripped"
 
 # configure init.d scripts
-INITSCRIPT_PACKAGES = "${PN}-xend ${PN}-xencommons ${PN}-xen-watchdog ${PN}-xendomains ${PN}-devd"
+INITSCRIPT_PACKAGES = "${PN}-xend ${PN}-xen-watchdog ${PN}-xendomains ${PN}-devd"
+INITSCRIPT_PACKAGES += "${@bb.utils.contains('DISTRO_FEATURES', 'systemd', '', '${PN}-xencommons', d)}"
 INITSCRIPT_NAME:${PN}-xencommons = "xencommons"
 INITSCRIPT_PARAMS:${PN}-xencommons = "defaults 80"
 INITSCRIPT_NAME:${PN}-xen-watchdog = "xen-watchdog"
@@ -807,12 +803,23 @@ do_install() {
         done
     fi
 
-    # fixup default path to qemu-system-i386
-    sed -i 's#\(test -z "$QEMU_XEN" && QEMU_XEN=\).*$#\1"/usr/bin/qemu-system-i386"#' ${D}/etc/init.d/xencommons
-
     if [ -e ${D}${systemd_unitdir}/system/xen-qemu-dom0-disk-backend.service ]; then
         sed -i 's#ExecStart=.*qemu-system-i386\(.*\)$#ExecStart=/usr/bin/qemu-system-i386\1#' \
             ${D}${systemd_unitdir}/system/xen-qemu-dom0-disk-backend.service
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES','systemd','true','false',d)}; then
+        rm -f ${D}/${sysconfdir}/init.d/xencommons
+    else
+        # fixup default path to qemu-system-i386
+        sed -i 's#\(test -z "$QEMU_XEN" && QEMU_XEN=\).*$#\1"/usr/bin/qemu-system-i386"#' ${D}/etc/init.d/xencommons
+
+        # remove the uncondiontally installed systemd service files
+        rm -f ${D}/${systemd_unitdir}/system/xen-qemu-dom0-disk-backend.service
+        rm -f ${D}/${systemd_unitdir}/system/xenconsoled.service
+        rm -f ${D}/${systemd_unitdir}/system/xen-init-dom0.service
+        rm -f ${D}/${systemd_unitdir}/system/xenstored.service
+        rm -f ${D}/${systemd_unitdir}/system/var-lib-xenstored.mount
     fi
 }
 
