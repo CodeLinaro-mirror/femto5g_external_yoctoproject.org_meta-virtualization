@@ -39,14 +39,14 @@ DEPENDS = " \
     ostree \
     libdevmapper \
     libseccomp \
-    libselinux \
     "
 RDEPENDS:${PN} = " \
     cni \
     libdevmapper \
     "
 
-SKIP_RECIPE[cri-o] ?= "${@bb.utils.contains('BBFILE_COLLECTIONS', 'security', bb.utils.contains('BBFILE_COLLECTIONS', 'selinux', '', 'Depends on libselinux from meta-selinux which is not included', d), 'Depends on libseccomp from meta-security which is not included', d)}"
+PACKAGECONFIG ?= "${@bb.utils.filter('DISTRO_FEATURES', 'selinux', d)}"
+PACKAGECONFIG[selinux] = ",,libselinux"
 
 PACKAGES =+ "${PN}-config"
 
@@ -57,6 +57,7 @@ inherit systemd
 inherit go
 inherit goarch
 inherit pkgconfig
+inherit container-host
 
 EXTRA_OEMAKE="BUILDTAGS=''"
 
@@ -96,6 +97,8 @@ do_install() {
     install -m 0644 ${S}/src/import/contrib/systemd/crio.service  ${D}${systemd_unitdir}/system/
     install -m 0644 ${S}/src/import/contrib/systemd/crio-shutdown.service  ${D}${systemd_unitdir}/system/
     install -m 0644 ${S}/src/import/contrib/systemd/crio-wipe.service  ${D}${systemd_unitdir}/system/
+
+    install -d ${D}${localstatedir}/lib/crio
 }
 
 FILES:${PN}-config = "${sysconfdir}/crio/config/*"
